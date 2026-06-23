@@ -160,4 +160,23 @@ router.delete('/apuestas/:id', async (req, res) => {
   }
 });
 
+
+// MODIFICAR UNA APUESTA ESPECÍFICA (Para uso del Admin)
+router.put('/apuestas/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { golesLocal, golesVisitante } = req.body;
+
+    const apuestaActualizada = await Apuesta.findByIdAndUpdate(
+      id,
+      { golesLocal: Number(golesLocal), golesVisitante: Number(golesVisitante) },
+      { new: true }
+    );
+
+    res.json(apuestaActualizada);
+  } catch (error) {
+    res.status(500).json({ error: "Error al actualizar la apuesta" });
+  }
+});
+
 module.exports = router;
