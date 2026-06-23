@@ -60,12 +60,13 @@ router.post('/partidos', async (req, res) => {
 });
 
 // ==========================================
-// RUTAS DE APUESTAS (UPSERT)
+// RUTAS DE APUESTAS (PERMITE MÚLTIPLES APUESTAS POR PARTIDO)
 // ==========================================
 router.get('/apuestas', async (req, res) => {
   try {
-    const apuestas = await Apuesta.find(); // CORREGIDO: En singular
+    const apuestas = await Apuesta.find();
     res.json(apuestas.map(a => ({
+      id: a._id, // Agregamos el ID único de la apuesta por si lo necesitas en el frontend
       usuarioId: a.usuarioId,
       partidoId: a.partidoId,
       golesLocal: a.golesLocal,
@@ -79,23 +80,32 @@ router.get('/apuestas', async (req, res) => {
 router.post('/apuestas', async (req, res) => {
   try {
     const { usuarioId, partidoId, golesLocal, golesVisitante } = req.body;
+    
     if (!usuarioId || !partidoId || golesLocal === undefined || golesVisitante === undefined) {
       return res.status(400).json({ error: "Datos incompletos para registrar la apuesta" });
     }
 
-    const apuestaGuardada = await Apuesta.findOneAndUpdate(
-      { usuarioId, partidoId },
-      { golesLocal: Number(golesLocal), golesVisitante: Number(golesVisitante) },
-      { new: true, upsert: true }
-    );
+    // CAMBIO CLAVE: Usamos 'new Apuesta' y '.save()' para que CADA VEZ que le des click 
+    // a guardar, cree una apuesta nueva en la base de datos, permitiendo duplicar el partido.
+    const nuevaApuesta = new Apuesta({
+      usuarioId,
+      partidoId,
+      golesLocal: Number(golesLocal),
+      golesVisitante: Number(golesVisitante)
+    });
+
+    const apuestaGuardada = await nuevaApuesta.save();
 
     res.json({
+      mensaje: "Apuesta registrada con éxito",
+      id: apuestaGuardada._id,
       usuarioId: apuestaGuardada.usuarioId,
       partidoId: apuestaGuardada.partidoId,
       golesLocal: apuestaGuardada.golesLocal,
       golesVisitante: apuestaGuardada.golesVisitante
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error interno al guardar la apuesta" });
   }
 });
