@@ -10,18 +10,17 @@ const app = express();
 // Conectar a MongoDB
 connectDB();
 
-// Configuración robusta de CORS para producción en Vercel
+// Configuración robusta de CORS (Ya maneja los Preflights/OPTIONS automáticamente)
 app.use(cors({
-  origin: '*', // Permite solicitudes desde cualquier origen (incluyendo tu frontend apuestas-two.vercel.app)
+  origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200 // Fuerza respuesta exitosa a peticiones preflight del navegador
+  optionsSuccessStatus: 200 
 }));
 
-// Interceptor global para peticiones de tipo OPTIONS (Preflight)
-app.options('*', cors());
+// ❌ AQUÍ BORRAMOS LA LÍNEA: app.options('*', cors()); <-- ESTA ERA LA QUE REVENTABA EL SERVIDOR
 
-// Middleware para procesar JSON en el cuerpo de las peticiones
+// Middleware para procesar JSON
 app.use(express.json());
 
 // Enrutador de la API
