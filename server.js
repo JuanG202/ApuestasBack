@@ -7,27 +7,35 @@ dotenv.config();
 
 const app = express();
 
-// Conectar BD (Mongoose maneja internamente el pool de conexiones en Serverless)
+// Conectar a MongoDB
 connectDB();
 
-// Middlewares
-app.use(cors());
+// Configuración robusta de CORS para producción en Vercel
+app.use(cors({
+  origin: '*', // Permite solicitudes desde cualquier origen (incluyendo tu frontend apuestas-two.vercel.app)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // Fuerza respuesta exitosa a peticiones preflight del navegador
+}));
+
+// Interceptor global para peticiones de tipo OPTIONS (Preflight)
+app.options('*', cors());
+
+// Middleware para procesar JSON en el cuerpo de las peticiones
 app.use(express.json());
 
-// Rutas
+// Enrutador de la API
 app.use('/api', require('./routes/api'));
 
-// Ruta de prueba opcional para verificar el estado de la API
+// Ruta base de control de estado
 app.get('/', (req, res) => {
-  res.json({ status: "API de Polla Futbolera funcionando correctamente" });
+  res.json({ status: "API de Polla Futbolera corriendo sin problemas." });
 });
 
-// ESCUCHAR SOLO EN LOCAL
-// Vercel no usa app.listen, por lo que solo lo ejecutamos si no estamos en su entorno
+// Levantar servidor tradicional solo si estamos en desarrollo local
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Servidor local corriendo en http://localhost:${PORT}`));
 }
 
-// CRUCIAL PARA VERCEL: Exportar el módulo de la app
 module.exports = app;
