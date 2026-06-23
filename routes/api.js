@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Importación de tus modelos de Mongoose
+// IMPORTACIONES CORREGIDAS EN SINGULAR (Coincidiendo con tus archivos de VS Code)
 const Usuario = require('../models/Usuario');
 const Partido = require('../models/Partido');
 const Apuesta = require('../models/Apuesta');
@@ -64,7 +64,7 @@ router.post('/partidos', async (req, res) => {
 // ==========================================
 router.get('/apuestas', async (req, res) => {
   try {
-    const apuestas = await Apuestas.find();
+    const apuestas = await Apuesta.find(); // CORREGIDO: En singular
     res.json(apuestas.map(a => ({
       usuarioId: a.usuarioId,
       partidoId: a.partidoId,
@@ -83,7 +83,6 @@ router.post('/apuestas', async (req, res) => {
       return res.status(400).json({ error: "Datos incompletos para registrar la apuesta" });
     }
 
-    // Busca si ya existe la apuesta de ese usuario para ese partido y la actualiza, si no, la crea (upsert)
     const apuestaGuardada = await Apuesta.findOneAndUpdate(
       { usuarioId, partidoId },
       { golesLocal: Number(golesLocal), golesVisitante: Number(golesVisitante) },
@@ -124,7 +123,6 @@ router.post('/resultados', async (req, res) => {
       return res.status(400).json({ error: "Datos de resultado oficial incompletos" });
     }
 
-    // Sincroniza o registra el resultado oficial del partido
     const resultadoGuardado = await Resultado.findOneAndUpdate(
       { partidoId },
       { golesLocal: Number(golesLocal), golesVisitante: Number(golesVisitante) },
