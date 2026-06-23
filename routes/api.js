@@ -149,4 +149,15 @@ router.post('/resultados', async (req, res) => {
   }
 });
 
+// ELIMINAR UNA APUESTA ESPECÍFICA (Para uso del Admin)
+router.delete('/apuestas/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Apuesta.findByIdAndDelete(id);
+    res.json({ mensaje: "Apuesta eliminada correctamente" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar la apuesta" });
+  }
+});
+
 module.exports = router;
